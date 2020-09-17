@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--CDNを利用してパッケージをインポート-->
+  <script src="https://cdn.webrtc.ecl.ntt.com/skyway-latest.js"></script>
+
+  <title>SkyWayチュートリアル</title>
+</head>
+
+<body>
+    <h1>SkyWayチュートリアル</h1>
+    <h2>Font size is H2</h2>
+    <h3>Font size is H3 What day of the week is it today?</h3>
+
+   
+    <!-- org
+        <video id="my-video" width="400px" autoplay muted playsinline></video>
+    -->
+
+
+    <video id="my-video" width="200px" autoplay muted playsinline></video>
+
+
+    <!-- debug
+        <video id="my-video" width="1600px" autoplay muted playsinline></video>
+    -->
+
+   
+<p> id = 123456</p>
+
+<p>id='my-id'</p>
+<!--org
+<p id='my-id'></p>
+-->
+
+<p id='my-id'></p>
+
+<p id='test_id'>ただいまテスト中</p>
+
+
+<!--
+    <p>id="my-id"</p>
+-->
+
+
+北海道札幌市豊平<br>
+
+相手のPeerIDを記入するテキストエリア
+<textarea id="their-id"></textarea>
+
+発信ボタン
+<button id="make-call">発信</button>
+
+着信時に相手の映像を表示するvideo要素
+<video id="their-video" width="400px" autoplay muted playsinline></video>
+
+
+
+<!--
+    <script>
+-->
+
+    <script language="JavaScript">
+    //------------------------------------------------------------------
+    // ログイン設定＞利用可能なドメインで、localhostは不可、127.0.0.1ならOK
+    //------------------------------------------------------------------
+
+
+        let localStream;
+ 
+
+        document.write("<br>script started");
+
+         
+        {//test
+            var id = "test_id";
+            console.log(document.getElementById(id));
+            console.log("What day of the week is it today?");
+        }
+
+  //臨時カット
+  //xps15では臨時カットでIDが返る（camera不良？）
+       
+        // カメラ映像取得
+        //_org    navigator.mediaDevices.getUserMedia({video: true, audio: true}).then( stream => {
+
+        //_chg_test_200916
+        //navigator.mediaDevices.getUserMedia({video: true}).then( stream => {
+          
+        navigator.mediaDevices.getUserMedia({video: true, audio: true}).then( stream => {
+
+
+
+
+          // 成功時にvideo要素にカメラ映像をセットし、再生
+          const videoElm = document.getElementById('my-video');
+          videoElm.srcObject = stream;
+          videoElm.play();
+          // 着信時に相手にカメラ映像を返せるように、グローバル変数に保存しておく
+          localStream = stream;
+        }).catch( error => {
+          // 失敗時にはエラーログを出力
+          console.error('mediaDevice.getUserMedia() error:', error);
+          return;
+        });
+
+//endof 臨時カット
+
+
+
+        //Peer作成
+        //APIキー（ログイン画面で取得）　ab4c7203-d0d5-40c8-be59-c99ec78127cd
+        const peer = new Peer({
+         
+           // key: 'ab4c7203-d0d5-40c8-be59-c99ec78127cd',
+           // key: '6a3a6931-3685-4cb3-8bf0-dfd0024070e6',   //'あなたのAPIキー'
+           key: 'fa26ef78-237d-4e5d-8e3e-b0f2efd898b9',
+            debug: 3 //ログレベル３は開発用に全てのログを出力
+        });
+        
+
+
+        //PeerID取得
+        peer.on('open', () => {
+            document.getElementById('my-id').textContent = peer.id;
+        });
+
+        document.write("<br>鹿児島県薩摩町");
+        document.write("<br>");
+        document.write(peer.id);
+
+
+        // 発信処理
+        document.getElementById('make-call').onclick = () => {
+            const theirID = document.getElementById('their-id').value;
+            const mediaConnection = peer.call(theirID, localStream);
+            setEventListener(mediaConnection);
+        };
+
+        // イベントリスナを設置する関数
+        const setEventListener = mediaConnection => {
+                mediaConnection.on('stream', stream => {
+                // video要素にカメラ映像をセットして再生
+                const videoElm = document.getElementById('their-video')
+                videoElm.srcObject = stream;
+        
+                videoElm.play();
+            });
+        }
+
+        //着信処理
+        peer.on('call', mediaConnection => {
+            mediaConnection.answer(localStream);
+            setEventListener(mediaConnection);
+        });
+
+        document.write("<br>script finished");
+    </script>
+
+    <!--
+    </script>
+-->
+      
+</body>
+</html>
